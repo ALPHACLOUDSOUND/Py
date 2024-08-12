@@ -106,3 +106,4 @@ async def handle_response(client: Client, message: Message):
 if __name__ == "__main__":
     bot.run()
 
+
