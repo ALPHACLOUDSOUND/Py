@@ -1,7 +1,7 @@
 import asyncio
 from pyrogram import Client, filters
-from pyrogram.types import Message
 from pyrogram.errors import SessionPasswordNeeded
+from pyrogram.types import Message
 
 API_ID = "26661233"
 API_HASH = "2714c0f32cbede4c64f4e9fd628dbe29"
@@ -47,22 +47,21 @@ async def handle_response(client: Client, message: Message):
             phone_number = message.text
             user_state[user_id]["step"] = "login_code"
             
-            async with Client("my_account", api_id=API_ID, api_hash=API_HASH) as app:
-                try:
+            try:
+                async with Client("my_account", api_id=API_ID, api_hash=API_HASH) as app:
                     await app.send_code(phone_number)
                     await message.reply_text("Please enter the **login code** you received.")
-                except Exception as e:
-                    await message.reply_text(f"An error occurred: `{str(e)}`\nPlease try again.")
-                    del user_state[user_id]
+            except Exception as e:
+                await message.reply_text(f"An error occurred: `{str(e)}`\nPlease try again.")
+                del user_state[user_id]
 
         elif state["step"] == "login_code":
             login_code = message.text
             user_state[user_id]["step"] = "2fa_password"
             
-            async with Client("my_account", api_id=API_ID, api_hash=API_HASH) as app:
-                try:
+            try:
+                async with Client("my_account", api_id=API_ID, api_hash=API_HASH) as app:
                     await app.sign_in(phone_number, login_code)
-
                     if await app.check_password():
                         await message.reply_text("Please enter your **2FA password**.")
                     else:
@@ -72,21 +71,20 @@ async def handle_response(client: Client, message: Message):
                             f"`{string_session}`\n\n"
                             "⚠️ *Keep it safe and do not share it with anyone.*"
                         )
-
                         await message.reply_text(string_message)
                         await app.send_message("me", string_message)
                         await message.reply_text("Your string session has been saved to your Saved Messages.")
                     
-                except SessionPasswordNeeded:
-                    await message.reply_text("This account has 2FA enabled. Please enter your password.")
-                except Exception as e:
-                    await message.reply_text(f"An error occurred: `{str(e)}`\nPlease try again.")
-                    del user_state[user_id]
+            except SessionPasswordNeeded:
+                await message.reply_text("This account has 2FA enabled. Please enter your password.")
+            except Exception as e:
+                await message.reply_text(f"An error occurred: `{str(e)}`\nPlease try again.")
+                del user_state[user_id]
 
         elif state["step"] == "2fa_password":
             password = message.text
-            async with Client("my_account", api_id=API_ID, api_hash=API_HASH) as app:
-                try:
+            try:
+                async with Client("my_account", api_id=API_ID, api_hash=API_HASH) as app:
                     await app.check_password(password)
                     string_session = app.export_session_string()
                     string_message = (
@@ -94,14 +92,13 @@ async def handle_response(client: Client, message: Message):
                         f"`{string_session}`\n\n"
                         "⚠️ *Keep it safe and do not share it with anyone.*"
                     )
-
                     await message.reply_text(string_message)
                     await app.send_message("me", string_message)
                     await message.reply_text("Your string session has been saved to your Saved Messages.")
                     
-                except Exception as e:
-                    await message.reply_text(f"An error occurred: `{str(e)}`\nPlease try again.")
-                    del user_state[user_id]
+            except Exception as e:
+                await message.reply_text(f"An error occurred: `{str(e)}`\nPlease try again.")
+                del user_state[user_id]
 
         else:
             await message.reply_text("Please use /generate to start the session generation process.")
@@ -109,5 +106,3 @@ async def handle_response(client: Client, message: Message):
 if __name__ == "__main__":
     bot.run()
 
-            
-            
