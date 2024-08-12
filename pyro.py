@@ -1,13 +1,16 @@
-import asyncio
+import logging
+import os
 from pyrogram import Client, filters
 from pyrogram.errors import SessionPasswordNeeded
 from pyrogram.types import Message
 
-API_ID = "26661233"
-API_HASH = "2714c0f32cbede4c64f4e9fd628dbe29"
-BOT_TOKEN = "6279192368:AAE3nKbs_ViYJYZ2CCnE3PpX7Q5GDcbJvGo"
+# Configure logging
+logging.basicConfig(level=logging.INFO)
 
-# Bot client
+API_ID = "26661233"  # Replace with your API_ID
+API_HASH = "2714c0f32cbede4c64f4e9fd628dbe29"  # Replace with your API_HASH
+BOT_TOKEN = "6279192368:AAE3nKbs_ViYJYZ2CCnE3PpX7Q5GDcbJvGo"  # Replace with your BOT_TOKEN
+
 bot = Client(
     "string_session_bot",
     api_id=API_ID,
@@ -105,5 +108,3 @@ async def handle_response(client: Client, message: Message):
 
 if __name__ == "__main__":
     bot.run()
-
-
