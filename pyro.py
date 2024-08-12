@@ -6,7 +6,6 @@ API_ID = "26661233"
 API_HASH = "2714c0f32cbede4c64f4e9fd628dbe29"
 BOT_TOKEN = "6279192368:AAE3nKbs_ViYJYZ2CCnE3PpX7Q5GDcbJvGo"
 
-# Bot client
 bot = Client(
     "string_session_bot",
     api_id=API_ID,
@@ -30,17 +29,20 @@ async def generate_string_session(client: Client, message: Message):
         "so I can send you the login code to generate your session."
     )
     await message.reply_text(instructions)
-    
-    phone_number_msg = await bot.listen(message.chat.id)
+
+    # Wait for the user to reply with their phone number
+    phone_number_msg = await bot.listen(filters.private)
     phone_number = phone_number_msg.text
 
     async with Client("my_account", api_id=API_ID, api_hash=API_HASH) as app:
         try:
+            # Send the login code to the user's phone number
             await app.send_code(phone_number)
 
             await message.reply_text("Please enter the **login code** you received.")
 
-            login_code_msg = await bot.listen(message.chat.id)
+            # Wait for the user to reply with the login code
+            login_code_msg = await bot.listen(filters.private)
             login_code = login_code_msg.text
 
             await app.sign_in(phone_number, login_code)
@@ -48,11 +50,13 @@ async def generate_string_session(client: Client, message: Message):
             if await app.check_password():
                 await message.reply_text("Please enter your **2FA password**.")
                 
-                password_msg = await bot.listen(message.chat.id)
+                # Wait for the user to reply with the 2FA password
+                password_msg = await bot.listen(filters.private)
                 password = password_msg.text
                 
                 await app.check_password(password)
 
+            # Generate and send the Pyrogram string session
             string_session = app.export_session_string()
             string_message = (
                 f"**Pyrogram String Session**:\n\n"
@@ -70,20 +74,6 @@ async def generate_string_session(client: Client, message: Message):
 
         except Exception as e:
             await message.reply_text(f"An error occurred: `{str(e)}`\nPlease try again.")
-
-@bot.on_inline_query(filters.regex(r''))
-async def inline_query_handler(client: Client, query):
-    results = [
-        InlineQueryResultArticle(
-            title="Generate String Session",
-            description="Start the process to generate a Pyrogram string session",
-            input_message_content=InputTextMessageContent("/generate"),
-            reply_markup=InlineKeyboardMarkup(
-                [[InlineKeyboardButton("Start Generating", switch_inline_query_current_chat="/generate")]]
-            )
-        ),
-    ]
-    await query.answer(results, cache_time=1)
 
 if __name__ == "__main__":
     bot.run()
